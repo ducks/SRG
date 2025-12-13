@@ -1,4 +1,6 @@
 use anyhow::{Context, Result};
+use headless_chrome::types::PrintToPdfOptions;
+use headless_chrome::Browser;
 use jobl::JoblDocument;
 use std::fs;
 use std::path::Path;
@@ -19,10 +21,10 @@ pub fn build_resume(
     fs::write(&html_path, html)
         .context("Failed to write HTML file")?;
 
-    // Generate PDF (placeholder for now)
+    // Generate PDF from HTML
     let pdf_path = out_dir.join("resume.pdf");
-    fs::write(&pdf_path, b"PDF generation not implemented yet")
-        .context("Failed to write PDF file")?;
+    generate_pdf(&html_path, &pdf_path)
+        .context("Failed to generate PDF")?;
 
     Ok(())
 }
@@ -232,6 +234,55 @@ fn generate_minimal_html(doc: &JoblDocument) -> Result<String> {
     html.push_str("</html>\n");
 
     Ok(html)
+}
+
+/// Generate PDF from HTML file using headless Chrome
+fn generate_pdf(html_path: &Path, pdf_path: &Path) -> Result<()> {
+    let browser = Browser::default()
+        .context("Failed to launch Chrome browser")?;
+
+    let tab = browser.new_tab()
+        .context("Failed to create new browser tab")?;
+
+    // Convert path to file:// URL
+    let html_url = format!(
+        "file://{}",
+        html_path.canonicalize()
+            .context("Failed to resolve HTML path")?
+            .display()
+    );
+
+    tab.navigate_to(&html_url)
+        .context("Failed to navigate to HTML file")?;
+
+    tab.wait_until_navigated()
+        .context("Failed to wait for page load")?;
+
+    let pdf_data = tab.print_to_pdf(Some(PrintToPdfOptions {
+        landscape: Some(false),
+        display_header_footer: Some(false),
+        print_background: Some(true),
+        scale: Some(1.0),
+        paper_width: Some(8.5),
+        paper_height: Some(11.0),
+        margin_top: Some(0.4),
+        margin_bottom: Some(0.4),
+        margin_left: Some(0.4),
+        margin_right: Some(0.4),
+        page_ranges: None,
+        ignore_invalid_page_ranges: None,
+        header_template: None,
+        footer_template: None,
+        prefer_css_page_size: Some(false),
+        transfer_mode: None,
+        generate_document_outline: None,
+        generate_tagged_pdf: None,
+    })).context("Failed to generate PDF")?;
+
+    fs::write(pdf_path, pdf_data)
+        .context("Failed to write PDF file")?;
+
+    Ok(())
 }
 
 /// Escape HTML special characters
