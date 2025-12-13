@@ -56,7 +56,7 @@ CSS is optimized for both screen and print.
 ## Requirements
 
 Requires a valid JOBL file. See the [JOBL
-repository](https://github.com/yourname/jobl) for format specification.
+repository](https://github.com/ducks/jobl) for format specification.
 
 ## License
 
