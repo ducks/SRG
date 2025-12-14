@@ -1,0 +1,29 @@
+person
+  name
+  headline
+  email
+  phone
+  location
+  website
+
+summary
+
+skills
+
+experience
+  title
+  company
+  start " - " end
+  summary
+  highlights
+
+projects
+  name
+  url
+  summary
+
+education
+  degree
+  institution
+  start " - " end
+  details
