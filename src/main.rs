@@ -2,7 +2,8 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
 
-mod build;
+pub mod build;
+pub mod layout;
 
 /// Static Resume Generator - Build HTML and PDF resumes from JOBL files
 #[derive(Parser, Debug)]
@@ -20,6 +21,10 @@ struct Args {
     /// Template name
     #[arg(short, long, default_value = "minimal")]
     template: String,
+
+    /// Layout file (optional, uses default if not specified)
+    #[arg(short, long, value_name = "FILE")]
+    layout: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
@@ -35,8 +40,15 @@ fn main() -> Result<()> {
             anyhow::anyhow!("Failed to parse JOBL file")
         })?;
 
+    // Load layout
+    let layout = match &args.layout {
+        Some(path) => layout::Layout::from_file(path)
+            .context("Failed to load layout file")?,
+        None => layout::Layout::default(),
+    };
+
     // Build outputs
-    build::build_resume(&doc, &args.out, &args.template)
+    build::build_resume(&doc, &args.out, &args.template, &layout)
         .context("Failed to build resume")?;
 
     println!("Resume built successfully:");

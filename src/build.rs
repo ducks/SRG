@@ -5,18 +5,21 @@ use jobl::JoblDocument;
 use std::fs;
 use std::path::Path;
 
+use crate::layout::{FieldPart, Layout};
+
 /// Build HTML and PDF resume from JOBL document
 pub fn build_resume(
     doc: &JoblDocument,
     out_dir: &Path,
     template: &str,
+    layout: &Layout,
 ) -> Result<()> {
     // Create output directory
     fs::create_dir_all(out_dir)
         .context("Failed to create output directory")?;
 
     // Generate HTML
-    let html = generate_html(doc, template)?;
+    let html = generate_html(doc, template, layout)?;
     let html_path = out_dir.join("index.html");
     fs::write(&html_path, html)
         .context("Failed to write HTML file")?;
@@ -30,15 +33,31 @@ pub fn build_resume(
 }
 
 /// Generate HTML from JOBL document
-fn generate_html(doc: &JoblDocument, template: &str) -> Result<String> {
+fn generate_html(
+    doc: &JoblDocument,
+    template: &str,
+    layout: &Layout,
+) -> Result<String> {
     match template {
-        "minimal" => generate_minimal_html(doc),
+        "minimal" => generate_minimal_html(doc, layout),
         _ => anyhow::bail!("Unknown template: {}", template),
     }
 }
 
+/// Generate HTML for testing (public for integration tests)
+pub fn generate_test_html(
+    doc: &JoblDocument,
+    template: &str,
+    layout: &Layout,
+) -> Result<String> {
+    generate_html(doc, template, layout)
+}
+
 /// Generate minimal HTML template
-fn generate_minimal_html(doc: &JoblDocument) -> Result<String> {
+fn generate_minimal_html(
+    doc: &JoblDocument,
+    layout: &Layout,
+) -> Result<String> {
     let mut html = String::new();
 
     html.push_str("<!DOCTYPE html>\n");
@@ -57,41 +76,148 @@ fn generate_minimal_html(doc: &JoblDocument) -> Result<String> {
     html.push_str("<body>\n");
     html.push_str("  <main>\n");
 
-    // Header
-    html.push_str("    <header>\n");
-    html.push_str(&format!("      <h1>{}</h1>\n", doc.person.name));
-    if let Some(headline) = &doc.person.headline {
-        html.push_str(
-            &format!("      <p class=\"headline\">{}</p>\n", headline),
-        );
+    for section in &layout.sections {
+        match section.name.as_str() {
+            "person" => {
+                render_person_section(&mut html, doc, section);
+            }
+            "summary" => {
+                render_summary_section(&mut html, doc);
+            }
+            "skills" => {
+                render_skills_section(&mut html, doc);
+            }
+            "experience" => {
+                render_experience_section(&mut html, doc, section);
+            }
+            "projects" => {
+                render_projects_section(&mut html, doc, section);
+            }
+            "education" => {
+                render_education_section(&mut html, doc, section);
+            }
+            _ => {}
+        }
     }
-    html.push_str("      <div class=\"contact\">\n");
-    if let Some(email) = &doc.person.email {
-        html.push_str(
-            &format!("        <span>{}</span>\n", escape_html(email)),
-        );
-    }
-    if let Some(phone) = &doc.person.phone {
-        html.push_str(
-            &format!("        <span>{}</span>\n", escape_html(phone)),
-        );
-    }
-    if let Some(location) = &doc.person.location {
-        html.push_str(
-            &format!("        <span>{}</span>\n", escape_html(location)),
-        );
-    }
-    if let Some(website) = &doc.person.website {
-        html.push_str(&format!(
-            "        <a href=\"{}\">{}</a>\n",
-            escape_html(website),
-            escape_html(website)
-        ));
-    }
-    html.push_str("      </div>\n");
-    html.push_str("    </header>\n");
 
-    // Summary
+    html.push_str("  </main>\n");
+    html.push_str("</body>\n");
+    html.push_str("</html>\n");
+
+    Ok(html)
+}
+
+fn render_person_section(
+    html: &mut String,
+    doc: &JoblDocument,
+    section: &crate::layout::Section,
+) {
+    html.push_str("    <header>\n");
+
+    for field in &section.fields {
+        render_person_field(html, doc, field);
+    }
+
+    html.push_str("    </header>\n");
+}
+
+fn render_person_field(
+    html: &mut String,
+    doc: &JoblDocument,
+    field: &crate::layout::Field,
+) {
+    // If field has single part that's a known field, render it specially
+    if field.parts.len() == 1 {
+        if let FieldPart::Field(name) = &field.parts[0] {
+            match name.as_str() {
+                "name" => {
+                    html.push_str(
+                        &format!("      <h1>{}</h1>\n", doc.person.name),
+                    );
+                    return;
+                }
+                "headline" => {
+                    if let Some(headline) = &doc.person.headline {
+                        html.push_str(&format!(
+                            "      <p class=\"headline\">{}</p>\n",
+                            escape_html(headline)
+                        ));
+                    }
+                    return;
+                }
+                "email" => {
+                    if let Some(email) = &doc.person.email {
+                        html.push_str(&format!(
+                            "      <span>{}</span>\n",
+                            escape_html(email)
+                        ));
+                    }
+                    return;
+                }
+                "phone" => {
+                    if let Some(phone) = &doc.person.phone {
+                        html.push_str(&format!(
+                            "      <span>{}</span>\n",
+                            escape_html(phone)
+                        ));
+                    }
+                    return;
+                }
+                "location" => {
+                    if let Some(location) = &doc.person.location {
+                        html.push_str(&format!(
+                            "      <span>{}</span>\n",
+                            escape_html(location)
+                        ));
+                    }
+                    return;
+                }
+                "website" => {
+                    if let Some(website) = &doc.person.website {
+                        html.push_str(&format!(
+                            "      <a href=\"{}\">{}</a>\n",
+                            escape_html(website),
+                            escape_html(website)
+                        ));
+                    }
+                    return;
+                }
+                _ => {}
+            }
+        }
+    }
+
+    // Otherwise, render as inline mixed content
+    html.push_str("      <p>");
+    for part in &field.parts {
+        match part {
+            FieldPart::Literal(text) => {
+                html.push_str(&escape_html(text));
+            }
+            FieldPart::Field(name) => {
+                let value = get_person_field_value(doc, name);
+                if let Some(v) = value {
+                    html.push_str(&escape_html(&v));
+                }
+            }
+        }
+    }
+    html.push_str("</p>\n");
+}
+
+fn get_person_field_value(doc: &JoblDocument, field: &str) -> Option<String> {
+    match field {
+        "name" => Some(doc.person.name.clone()),
+        "headline" => doc.person.headline.clone(),
+        "email" => doc.person.email.clone(),
+        "phone" => doc.person.phone.clone(),
+        "location" => doc.person.location.clone(),
+        "website" => doc.person.website.clone(),
+        _ => None,
+    }
+}
+
+fn render_summary_section(html: &mut String, doc: &JoblDocument) {
     if let Some(summary) = &doc.person.summary {
         html.push_str("    <section>\n");
         html.push_str("      <h2>Summary</h2>\n");
@@ -100,8 +226,9 @@ fn generate_minimal_html(doc: &JoblDocument) -> Result<String> {
         );
         html.push_str("    </section>\n");
     }
+}
 
-    // Skills
+fn render_skills_section(html: &mut String, doc: &JoblDocument) {
     if let Some(skills) = &doc.skills {
         if !skills.is_empty() {
             html.push_str("    <section>\n");
@@ -120,120 +247,315 @@ fn generate_minimal_html(doc: &JoblDocument) -> Result<String> {
             html.push_str("    </section>\n");
         }
     }
+}
 
-    // Experience
-    if !doc.experience.is_empty() {
-        html.push_str("    <section>\n");
-        html.push_str("      <h2>Experience</h2>\n");
-        for exp in &doc.experience {
-            html.push_str("      <div class=\"entry\">\n");
-            html.push_str(&format!(
-                "        <h3>{}</h3>\n",
-                escape_html(&exp.title)
-            ));
-            html.push_str(&format!(
-                "        <p class=\"company\">{}</p>\n",
-                escape_html(&exp.company)
-            ));
-            if exp.start.is_some() || exp.end.is_some() {
-                let start = exp.start.as_deref().unwrap_or("");
-                let end = exp.end.as_deref().unwrap_or("");
-                html.push_str(&format!(
-                    "        <p class=\"dates\">{} - {}</p>\n",
-                    escape_html(start),
-                    escape_html(end)
-                ));
-            }
-            if let Some(summary) = &exp.summary {
-                html.push_str(
-                    &format!("        <p>{}</p>\n", escape_html(summary)),
-                );
-            }
-            if !exp.highlights.is_empty() {
-                html.push_str("        <ul>\n");
-                for highlight in &exp.highlights {
+fn render_experience_section(
+    html: &mut String,
+    doc: &JoblDocument,
+    section: &crate::layout::Section,
+) {
+    if doc.experience.is_empty() {
+        return;
+    }
+
+    html.push_str("    <section>\n");
+    html.push_str("      <h2>Experience</h2>\n");
+
+    for exp in &doc.experience {
+        html.push_str("      <div class=\"entry\">\n");
+
+        for field in &section.fields {
+            render_experience_field(html, exp, field);
+        }
+
+        html.push_str("      </div>\n");
+    }
+
+    html.push_str("    </section>\n");
+}
+
+fn render_experience_field(
+    html: &mut String,
+    exp: &jobl::ExperienceItem,
+    field: &crate::layout::Field,
+) {
+    if field.parts.is_empty() {
+        return;
+    }
+
+    // Check for single-field special cases
+    if field.parts.len() == 1 {
+        if let FieldPart::Field(name) = &field.parts[0] {
+            match name.as_str() {
+                "title" => {
                     html.push_str(&format!(
-                        "          <li>{}</li>\n",
-                        escape_html(highlight)
+                        "        <h3>{}</h3>\n",
+                        escape_html(&exp.title)
                     ));
+                    return;
                 }
-                html.push_str("        </ul>\n");
-            }
-            html.push_str("      </div>\n");
-        }
-        html.push_str("    </section>\n");
-    }
-
-    // Projects
-    if !doc.projects.is_empty() {
-        html.push_str("    <section>\n");
-        html.push_str("      <h2>Projects</h2>\n");
-        for proj in &doc.projects {
-            html.push_str("      <div class=\"entry\">\n");
-            html.push_str(&format!(
-                "        <h3>{}</h3>\n",
-                escape_html(&proj.name)
-            ));
-            if let Some(url) = &proj.url {
-                html.push_str(&format!(
-                    "        <p><a href=\"{}\">{}</a></p>\n",
-                    escape_html(url),
-                    escape_html(url)
-                ));
-            }
-            if let Some(summary) = &proj.summary {
-                html.push_str(
-                    &format!("        <p>{}</p>\n", escape_html(summary)),
-                );
-            }
-            html.push_str("      </div>\n");
-        }
-        html.push_str("    </section>\n");
-    }
-
-    // Education
-    if !doc.education.is_empty() {
-        html.push_str("    <section>\n");
-        html.push_str("      <h2>Education</h2>\n");
-        for edu in &doc.education {
-            html.push_str("      <div class=\"entry\">\n");
-            html.push_str(&format!(
-                "        <h3>{}</h3>\n",
-                escape_html(&edu.degree)
-            ));
-            html.push_str(&format!(
-                "        <p class=\"company\">{}</p>\n",
-                escape_html(&edu.institution)
-            ));
-            if edu.start.is_some() || edu.end.is_some() {
-                let start = edu.start.as_deref().unwrap_or("");
-                let end = edu.end.as_deref().unwrap_or("");
-                html.push_str(&format!(
-                    "        <p class=\"dates\">{} - {}</p>\n",
-                    escape_html(start),
-                    escape_html(end)
-                ));
-            }
-            if !edu.details.is_empty() {
-                html.push_str("        <ul>\n");
-                for detail in &edu.details {
+                "company" => {
                     html.push_str(&format!(
-                        "          <li>{}</li>\n",
-                        escape_html(detail)
+                        "        <p class=\"company\">{}</p>\n",
+                        escape_html(&exp.company)
                     ));
+                    return;
                 }
-                html.push_str("        </ul>\n");
+                "summary" => {
+                    if let Some(summary) = &exp.summary {
+                        html.push_str(&format!(
+                            "        <p>{}</p>\n",
+                            escape_html(summary)
+                        ));
+                    }
+                    return;
+                }
+                "highlights" => {
+                    if !exp.highlights.is_empty() {
+                        html.push_str("        <ul>\n");
+                        for highlight in &exp.highlights {
+                            html.push_str(&format!(
+                                "          <li>{}</li>\n",
+                                escape_html(highlight)
+                            ));
+                        }
+                        html.push_str("        </ul>\n");
+                    }
+                    return;
+                }
+                _ => {}
             }
-            html.push_str("      </div>\n");
         }
-        html.push_str("    </section>\n");
     }
 
-    html.push_str("  </main>\n");
-    html.push_str("</body>\n");
-    html.push_str("</html>\n");
+    // Render as inline mixed content
+    html.push_str("        <p>");
+    for part in &field.parts {
+        match part {
+            FieldPart::Literal(text) => {
+                html.push_str(&escape_html(text));
+            }
+            FieldPart::Field(name) => {
+                let value = get_experience_field_value(exp, name);
+                if let Some(v) = value {
+                    html.push_str(&escape_html(&v));
+                }
+            }
+        }
+    }
+    html.push_str("</p>\n");
+}
 
-    Ok(html)
+fn get_experience_field_value(
+    exp: &jobl::ExperienceItem,
+    field: &str,
+) -> Option<String> {
+    match field {
+        "title" => Some(exp.title.clone()),
+        "company" => Some(exp.company.clone()),
+        "location" => exp.location.clone(),
+        "start" => exp.start.clone(),
+        "end" => exp.end.clone(),
+        "summary" => exp.summary.clone(),
+        _ => None,
+    }
+}
+
+fn render_projects_section(
+    html: &mut String,
+    doc: &JoblDocument,
+    section: &crate::layout::Section,
+) {
+    if doc.projects.is_empty() {
+        return;
+    }
+
+    html.push_str("    <section>\n");
+    html.push_str("      <h2>Projects</h2>\n");
+
+    for proj in &doc.projects {
+        html.push_str("      <div class=\"entry\">\n");
+
+        for field in &section.fields {
+            render_project_field(html, proj, field);
+        }
+
+        html.push_str("      </div>\n");
+    }
+
+    html.push_str("    </section>\n");
+}
+
+fn render_project_field(
+    html: &mut String,
+    proj: &jobl::ProjectItem,
+    field: &crate::layout::Field,
+) {
+    if field.parts.is_empty() {
+        return;
+    }
+
+    if field.parts.len() == 1 {
+        if let FieldPart::Field(name) = &field.parts[0] {
+            match name.as_str() {
+                "name" => {
+                    html.push_str(&format!(
+                        "        <h3>{}</h3>\n",
+                        escape_html(&proj.name)
+                    ));
+                    return;
+                }
+                "url" => {
+                    if let Some(url) = &proj.url {
+                        html.push_str(&format!(
+                            "        <p><a href=\"{}\">{}</a></p>\n",
+                            escape_html(url),
+                            escape_html(url)
+                        ));
+                    }
+                    return;
+                }
+                "summary" => {
+                    if let Some(summary) = &proj.summary {
+                        html.push_str(&format!(
+                            "        <p>{}</p>\n",
+                            escape_html(summary)
+                        ));
+                    }
+                    return;
+                }
+                _ => {}
+            }
+        }
+    }
+
+    html.push_str("        <p>");
+    for part in &field.parts {
+        match part {
+            FieldPart::Literal(text) => {
+                html.push_str(&escape_html(text));
+            }
+            FieldPart::Field(name) => {
+                let value = get_project_field_value(proj, name);
+                if let Some(v) = value {
+                    html.push_str(&escape_html(&v));
+                }
+            }
+        }
+    }
+    html.push_str("</p>\n");
+}
+
+fn get_project_field_value(
+    proj: &jobl::ProjectItem,
+    field: &str,
+) -> Option<String> {
+    match field {
+        "name" => Some(proj.name.clone()),
+        "url" => proj.url.clone(),
+        "summary" => proj.summary.clone(),
+        _ => None,
+    }
+}
+
+fn render_education_section(
+    html: &mut String,
+    doc: &JoblDocument,
+    section: &crate::layout::Section,
+) {
+    if doc.education.is_empty() {
+        return;
+    }
+
+    html.push_str("    <section>\n");
+    html.push_str("      <h2>Education</h2>\n");
+
+    for edu in &doc.education {
+        html.push_str("      <div class=\"entry\">\n");
+
+        for field in &section.fields {
+            render_education_field(html, edu, field);
+        }
+
+        html.push_str("      </div>\n");
+    }
+
+    html.push_str("    </section>\n");
+}
+
+fn render_education_field(
+    html: &mut String,
+    edu: &jobl::EducationItem,
+    field: &crate::layout::Field,
+) {
+    if field.parts.is_empty() {
+        return;
+    }
+
+    if field.parts.len() == 1 {
+        if let FieldPart::Field(name) = &field.parts[0] {
+            match name.as_str() {
+                "degree" => {
+                    html.push_str(&format!(
+                        "        <h3>{}</h3>\n",
+                        escape_html(&edu.degree)
+                    ));
+                    return;
+                }
+                "institution" => {
+                    html.push_str(&format!(
+                        "        <p class=\"company\">{}</p>\n",
+                        escape_html(&edu.institution)
+                    ));
+                    return;
+                }
+                "details" => {
+                    if !edu.details.is_empty() {
+                        html.push_str("        <ul>\n");
+                        for detail in &edu.details {
+                            html.push_str(&format!(
+                                "          <li>{}</li>\n",
+                                escape_html(detail)
+                            ));
+                        }
+                        html.push_str("        </ul>\n");
+                    }
+                    return;
+                }
+                _ => {}
+            }
+        }
+    }
+
+    html.push_str("        <p>");
+    for part in &field.parts {
+        match part {
+            FieldPart::Literal(text) => {
+                html.push_str(&escape_html(text));
+            }
+            FieldPart::Field(name) => {
+                let value = get_education_field_value(edu, name);
+                if let Some(v) = value {
+                    html.push_str(&escape_html(&v));
+                }
+            }
+        }
+    }
+    html.push_str("</p>\n");
+}
+
+fn get_education_field_value(
+    edu: &jobl::EducationItem,
+    field: &str,
+) -> Option<String> {
+    match field {
+        "degree" => Some(edu.degree.clone()),
+        "institution" => Some(edu.institution.clone()),
+        "location" => edu.location.clone(),
+        "start" => edu.start.clone(),
+        "end" => edu.end.clone(),
+        _ => None,
+    }
 }
 
 /// Generate PDF from HTML file using headless Chrome
