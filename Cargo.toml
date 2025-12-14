@@ -2,8 +2,14 @@
 name = "srg"
 version = "20251214.0.1"
 edition = "2021"
-authors = ["Jake Goldsborough"]
+authors = ["Jake Goldsborough <github@pancakes.email>"]
+description = "Static Resume Generator - converts JOBL files to HTML and PDF"
 license = "MIT"
+repository = "https://github.com/ducks/srg"
+homepage = "https://jobl.dev"
+keywords = ["resume", "cv", "generator", "pdf", "html"]
+categories = ["command-line-utilities"]
+readme = "README.md"
 
 [dependencies]
 jobl = "0.1"
