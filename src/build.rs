@@ -11,15 +11,21 @@ use crate::layout::{FieldPart, Layout};
 pub fn build_resume(
     doc: &JoblDocument,
     out_dir: &Path,
-    template: &str,
+    theme: &str,
     layout: &Layout,
 ) -> Result<()> {
     // Create output directory
     fs::create_dir_all(out_dir)
         .context("Failed to create output directory")?;
 
+    // Copy theme fonts to output directory
+    copy_theme_fonts(theme, out_dir)?;
+
+    // Load CSS from theme
+    let css = load_theme_css(theme)?;
+
     // Generate HTML
-    let html = generate_html(doc, template, layout)?;
+    let html = generate_html(doc, &css, layout)?;
     let html_path = out_dir.join("index.html");
     fs::write(&html_path, html)
         .context("Failed to write HTML file")?;
@@ -32,30 +38,54 @@ pub fn build_resume(
     Ok(())
 }
 
-/// Generate HTML from JOBL document
-fn generate_html(
-    doc: &JoblDocument,
-    template: &str,
-    layout: &Layout,
-) -> Result<String> {
-    match template {
-        "minimal" => generate_minimal_html(doc, layout),
-        _ => anyhow::bail!("Unknown template: {}", template),
+/// Copy theme fonts to output directory
+fn copy_theme_fonts(theme: &str, out_dir: &Path) -> Result<()> {
+    if theme == "jake" {
+        // Create fonts directory structure
+        let fonts_dir = out_dir.join("fonts");
+        fs::create_dir_all(fonts_dir.join("waika"))?;
+        fs::create_dir_all(fonts_dir.join("berkeley-mono"))?;
+
+        // Copy Waika font
+        fs::write(
+            fonts_dir.join("waika/waika-webfont.woff2"),
+            include_bytes!("layouts/jake/fonts/waika/waika-webfont.woff2")
+        )?;
+
+        // Copy Berkeley Mono fonts
+        fs::write(
+            fonts_dir.join("berkeley-mono/BerkeleyMono-Regular.woff2"),
+            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-Regular.woff2")
+        )?;
+        fs::write(
+            fonts_dir.join("berkeley-mono/BerkeleyMono-Bold.woff2"),
+            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-Bold.woff2")
+        )?;
+        fs::write(
+            fonts_dir.join("berkeley-mono/BerkeleyMono-Italic.woff2"),
+            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-Italic.woff2")
+        )?;
+        fs::write(
+            fonts_dir.join("berkeley-mono/BerkeleyMono-BoldItalic.woff2"),
+            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-BoldItalic.woff2")
+        )?;
+    }
+    Ok(())
+}
+
+/// Load CSS from theme directory
+fn load_theme_css(theme: &str) -> Result<String> {
+    match theme {
+        "minimal" => Ok(include_str!("layouts/minimal/style.css").to_string()),
+        "jake" => Ok(include_str!("layouts/jake/style.css").to_string()),
+        _ => anyhow::bail!("Unknown theme: {}", theme),
     }
 }
 
-/// Generate HTML for testing (public for integration tests)
-pub fn generate_test_html(
+/// Generate HTML from JOBL document
+fn generate_html(
     doc: &JoblDocument,
-    template: &str,
-    layout: &Layout,
-) -> Result<String> {
-    generate_html(doc, template, layout)
-}
-
-/// Generate minimal HTML template
-fn generate_minimal_html(
-    doc: &JoblDocument,
+    css: &str,
     layout: &Layout,
 ) -> Result<String> {
     let mut html = String::new();
@@ -70,7 +100,7 @@ fn generate_minimal_html(
     );
     html.push_str(&format!("  <title>{}</title>\n", doc.person.name));
     html.push_str("  <style>\n");
-    html.push_str(include_str!("templates/minimal.css"));
+    html.push_str(css);
     html.push_str("  </style>\n");
     html.push_str("</head>\n");
     html.push_str("<body>\n");
@@ -105,6 +135,16 @@ fn generate_minimal_html(
     html.push_str("</html>\n");
 
     Ok(html)
+}
+
+/// Generate HTML for testing (public for integration tests)
+pub fn generate_test_html(
+    doc: &JoblDocument,
+    theme: &str,
+    layout: &Layout,
+) -> Result<String> {
+    let css = load_theme_css(theme)?;
+    generate_html(doc, &css, layout)
 }
 
 fn render_person_section(
@@ -316,7 +356,7 @@ fn render_experience_field(
                         for highlight in &exp.highlights {
                             html.push_str(&format!(
                                 "          <li>{}</li>\n",
-                                escape_html(highlight)
+                                escape_html_with_breaks(highlight)
                             ));
                         }
                         html.push_str("        </ul>\n");
@@ -515,7 +555,7 @@ fn render_education_field(
                         for detail in &edu.details {
                             html.push_str(&format!(
                                 "          <li>{}</li>\n",
-                                escape_html(detail)
+                                escape_html_with_breaks(detail)
                             ));
                         }
                         html.push_str("        </ul>\n");
@@ -587,10 +627,10 @@ fn generate_pdf(html_path: &Path, pdf_path: &Path) -> Result<()> {
         scale: Some(1.0),
         paper_width: Some(8.5),
         paper_height: Some(11.0),
-        margin_top: Some(0.4),
-        margin_bottom: Some(0.4),
-        margin_left: Some(0.4),
-        margin_right: Some(0.4),
+        margin_top: Some(0.0),
+        margin_bottom: Some(0.0),
+        margin_left: Some(0.0),
+        margin_right: Some(0.0),
         page_ranges: None,
         ignore_invalid_page_ranges: None,
         header_template: None,
@@ -614,4 +654,9 @@ fn escape_html(s: &str) -> String {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
         .replace('\'', "&#39;")
+}
+
+/// Escape HTML and convert newlines to <br> tags
+fn escape_html_with_breaks(s: &str) -> String {
+    escape_html(s).replace('\n', "<br>\n")
 }

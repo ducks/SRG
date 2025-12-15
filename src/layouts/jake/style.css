@@ -1,0 +1,370 @@
+/* Jake's Resume Theme - Based on jakegoldsborough.com */
+
+@font-face {
+  font-family: "Waika";
+  src: url("fonts/waika/waika-webfont.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Berkeley Mono";
+  src: url("fonts/berkeley-mono/BerkeleyMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Berkeley Mono";
+  src: url("fonts/berkeley-mono/BerkeleyMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Berkeley Mono";
+  src: url("fonts/berkeley-mono/BerkeleyMono-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Berkeley Mono";
+  src: url("fonts/berkeley-mono/BerkeleyMono-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Gruvbox color palette */
+:root {
+  /* Background shades - Dark */
+  --dark0-hard: #1d2021;
+  --dark0: #282828;
+  --dark0-soft: #32302f;
+  --dark1: #3c3836;
+  --dark2: #504945;
+  --dark3: #665c54;
+  --dark4: #7c6f64;
+
+  /* Background shades - Light */
+  --light0-hard: #f9f5d7;
+  --light0: #fbf1c7;
+  --light0-soft: #f2e5bc;
+  --light1: #ebdbb2;
+  --light2: #d5c4a1;
+  --light3: #bdae93;
+  --light4: #a89984;
+
+  /* Gray */
+  --gray: #928374;
+
+  /* Bright colors (saturated) */
+  --bright-red: #fb4934;
+  --bright-green: #b8bb26;
+  --bright-yellow: #fabd2f;
+  --bright-blue: #83a598;
+  --bright-purple: #d3869b;
+  --bright-aqua: #8ec07c;
+  --bright-orange: #fe8019;
+
+  /* Neutral colors (medium) */
+  --neutral-red: #cc241d;
+  --neutral-green: #98971a;
+  --neutral-yellow: #d79921;
+  --neutral-blue: #458588;
+  --neutral-purple: #b16286;
+  --neutral-aqua: #689d6a;
+  --neutral-orange: #d65d0e;
+
+  /* Faded colors (muted) */
+  --faded-red: #9d0006;
+  --faded-green: #79740e;
+  --faded-yellow: #b57614;
+  --faded-blue: #076678;
+  --faded-purple: #8f3f71;
+  --faded-aqua: #427b58;
+  --faded-orange: #af3a03;
+
+  /* Semantic aliases - Dark mode */
+  --bg: var(--dark0);
+  --fg: var(--light1);
+  --red: var(--bright-red);
+  --green: var(--bright-green);
+  --yellow: var(--bright-yellow);
+  --blue: var(--bright-blue);
+  --purple: var(--neutral-purple);
+  --aqua: var(--bright-aqua);
+  --orange: var(--neutral-orange);
+
+  --accent-main: var(--purple);
+  --accent-comp: var(--green);
+  --code-color: var(--fg);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: "Berkeley Mono", "Courier New", Courier, monospace;
+  font-weight: 400;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+main {
+  max-width: 75ch;
+  margin: 2rem auto;
+  padding: 2rem 1rem;
+}
+
+/* Section styling */
+.section {
+  margin-bottom: 2rem;
+}
+
+/* Person section (header) */
+#person {
+  border-bottom: none;
+  margin-bottom: 2rem;
+}
+
+.person-name {
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-size: clamp(3rem, 5vw, 3rem);
+  font-weight: 400;
+  color: var(--accent-comp);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+}
+
+.person-headline {
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-size: clamp(2.5rem, 4vw, 2rem);
+  font-weight: 400;
+  color: var(--accent-comp);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+}
+
+.person-email {
+  font-size: 1.25rem;
+  color: var(--fg);
+}
+
+/* Summary section */
+#summary h2 {
+  font-size: clamp(2.25rem, 3vw, 2rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--accent-comp);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.summary-text {
+  font-size: 1.25rem;
+}
+
+/* Experience section */
+#experience h2 {
+  font-size: clamp(2.25rem, 3vw, 2rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--accent-comp);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.experience-item {
+  margin-bottom: 2rem;
+}
+
+.experience-title {
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--green);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  text-transform: none;
+}
+
+.experience-company {
+  font-size: clamp(2rem, 3vw, 2rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--orange);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.experience-summary {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.experience-highlights {
+  font-size: 1.25rem;
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.experience-highlights li {
+  margin-bottom: 0.5rem;
+}
+
+/* Skills section */
+#skills h2 {
+  font-size: clamp(2.25rem, 3vw, 2rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--accent-comp);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.skills-category {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skills-category-name {
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--green);
+  text-transform: none;
+}
+
+.skills-items {
+  font-size: 1.25rem;
+}
+
+/* Projects section */
+#projects h2 {
+  font-size: clamp(2.25rem, 3vw, 2rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--accent-comp);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.projects-item {
+  margin-bottom: 2rem;
+}
+
+.projects-name {
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--green);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  text-transform: none;
+}
+
+.projects-summary {
+  font-size: 1.25rem;
+}
+
+/* Education section */
+#education h2 {
+  font-size: clamp(2.25rem, 3vw, 2rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--accent-comp);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.education-item {
+  margin-bottom: 2rem;
+}
+
+.education-degree {
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--green);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  text-transform: none;
+}
+
+.education-institution {
+  font-size: clamp(2rem, 3vw, 2rem);
+  font-family: "Waika", "Berkeley Mono", monospace;
+  font-weight: 400;
+  color: var(--orange);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.education-details {
+  font-size: 1.25rem;
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.education-details li {
+  margin-bottom: 0.5rem;
+}
+
+/* Links */
+a {
+  color: var(--accent-main);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Code blocks */
+code {
+  font-family: monospace;
+  background-color: #3c3836;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  color: var(--code-color);
+  font-size: 1rem;
+}
+
+/* Print styles for PDF */
+@media print {
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  main {
+    max-width: 100%;
+    margin: 0;
+    padding: 1rem;
+  }
+
+  .section {
+    page-break-inside: avoid;
+  }
+}
