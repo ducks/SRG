@@ -125,9 +125,13 @@ body {
 }
 
 main {
-  max-width: 75ch;
+  max-width: 80ch;
   margin: 0 auto;
   padding: 2rem 1rem;
+}
+
+p {
+  font-size: 1.25rem;
 }
 
 /* Section styling */
@@ -160,7 +164,6 @@ main {
 }
 
 .person-email {
-  font-size: 1.25rem;
   color: var(--fg);
 }
 
@@ -175,8 +178,8 @@ main {
   text-transform: uppercase;
 }
 
-.summary-text {
-  font-size: 1.25rem;
+.person-summary {
+  padding-top: 2rem;
 }
 
 /* Experience section */
@@ -215,18 +218,21 @@ main {
 }
 
 .experience-summary {
-  font-size: 1.25rem;
   margin-bottom: 1rem;
+  padding-top: 2rem;
 }
 
 .experience-highlights {
-  font-size: 1.25rem;
   margin-left: 2rem;
   margin-bottom: 1rem;
 }
 
 .experience-highlights li {
   margin-bottom: 0.5rem;
+}
+
+.title-duration {
+  font-weight: bold;
 }
 
 /* Skills section */
@@ -241,7 +247,6 @@ main {
 }
 
 .skills-category {
-  font-size: 1.25rem;
   margin-bottom: 0.5rem;
 }
 
@@ -251,10 +256,6 @@ main {
   font-weight: 400;
   color: var(--green);
   text-transform: none;
-}
-
-.skills-items {
-  font-size: 1.25rem;
 }
 
 /* Projects section */
@@ -280,10 +281,6 @@ main {
   margin-top: 1rem;
   margin-bottom: 0.5rem;
   text-transform: none;
-}
-
-.projects-summary {
-  font-size: 1.25rem;
 }
 
 /* Education section */
@@ -322,7 +319,6 @@ main {
 }
 
 .education-details {
-  font-size: 1.25rem;
   margin-left: 2rem;
   margin-bottom: 1rem;
 }
@@ -358,10 +354,22 @@ code {
     padding: 0;
   }
 
+  p {
+    font-size: 1rem;
+  }
+
   main {
     max-width: 100%;
     margin: 0;
-    padding: 2rem;
+    padding: 1rem 2rem;
+  }
+
+  .person-summary {
+    padding-top: 1rem;
+  }
+
+  .experience-summary {
+    padding-top: 1rem;
   }
 
   h2 {
