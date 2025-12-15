@@ -916,7 +916,7 @@ dependencies = [
 
 [[package]]
 name = "srg"
-version = "20251215.0.1"
+version = "20251215.0.2"
 dependencies = [
  "anyhow",
  "clap",
