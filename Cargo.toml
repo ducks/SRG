@@ -12,7 +12,7 @@ categories = ["command-line-utilities"]
 readme = "README.md"
 
 [dependencies]
-jobl = { path = "../jobl" }
+jobl = "20251215.0.0"
 clap = { version = "4.5", features = ["derive"] }
 anyhow = "1.0"
 headless_chrome = "1.0"
