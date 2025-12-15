@@ -112,7 +112,7 @@ fn render_person_section(
     doc: &JoblDocument,
     section: &crate::layout::Section,
 ) {
-    html.push_str("    <header>\n");
+    html.push_str("    <header id=\"person\" class=\"section section-person\">\n");
 
     for field in &section.fields {
         render_person_field(html, doc, field);
@@ -132,14 +132,14 @@ fn render_person_field(
             match name.as_str() {
                 "name" => {
                     html.push_str(
-                        &format!("      <h1>{}</h1>\n", doc.person.name),
+                        &format!("      <h1 class=\"person-name\">{}</h1>\n", doc.person.name),
                     );
                     return;
                 }
                 "headline" => {
                     if let Some(headline) = &doc.person.headline {
                         html.push_str(&format!(
-                            "      <p class=\"headline\">{}</p>\n",
+                            "      <p class=\"person-headline\">{}</p>\n",
                             escape_html(headline)
                         ));
                     }
@@ -148,7 +148,7 @@ fn render_person_field(
                 "email" => {
                     if let Some(email) = &doc.person.email {
                         html.push_str(&format!(
-                            "      <span>{}</span>\n",
+                            "      <span class=\"person-email\">{}</span>\n",
                             escape_html(email)
                         ));
                     }
@@ -157,7 +157,7 @@ fn render_person_field(
                 "phone" => {
                     if let Some(phone) = &doc.person.phone {
                         html.push_str(&format!(
-                            "      <span>{}</span>\n",
+                            "      <span class=\"person-phone\">{}</span>\n",
                             escape_html(phone)
                         ));
                     }
@@ -166,7 +166,7 @@ fn render_person_field(
                 "location" => {
                     if let Some(location) = &doc.person.location {
                         html.push_str(&format!(
-                            "      <span>{}</span>\n",
+                            "      <span class=\"person-location\">{}</span>\n",
                             escape_html(location)
                         ));
                     }
@@ -175,7 +175,7 @@ fn render_person_field(
                 "website" => {
                     if let Some(website) = &doc.person.website {
                         html.push_str(&format!(
-                            "      <a href=\"{}\">{}</a>\n",
+                            "      <a class=\"person-website\" href=\"{}\">{}</a>\n",
                             escape_html(website),
                             escape_html(website)
                         ));
@@ -219,10 +219,10 @@ fn get_person_field_value(doc: &JoblDocument, field: &str) -> Option<String> {
 
 fn render_summary_section(html: &mut String, doc: &JoblDocument) {
     if let Some(summary) = &doc.person.summary {
-        html.push_str("    <section>\n");
+        html.push_str("    <section id=\"summary\" class=\"section section-summary\">\n");
         html.push_str("      <h2>Summary</h2>\n");
         html.push_str(
-            &format!("      <p>{}</p>\n", escape_html(summary)),
+            &format!("      <p class=\"summary-text\">{}</p>\n", escape_html(summary)),
         );
         html.push_str("    </section>\n");
     }
@@ -231,11 +231,11 @@ fn render_summary_section(html: &mut String, doc: &JoblDocument) {
 fn render_skills_section(html: &mut String, doc: &JoblDocument) {
     if let Some(skills) = &doc.skills {
         if !skills.is_empty() {
-            html.push_str("    <section>\n");
+            html.push_str("    <section id=\"skills\" class=\"section section-skills\">\n");
             html.push_str("      <h2>Skills</h2>\n");
             for (category, items) in skills {
                 html.push_str(&format!(
-                    "      <p><strong>{}:</strong> {}</p>\n",
+                    "      <p class=\"skills-category\"><strong class=\"skills-category-name\">{}:</strong> <span class=\"skills-items\">{}</span></p>\n",
                     escape_html(category),
                     items
                         .iter()
@@ -258,11 +258,11 @@ fn render_experience_section(
         return;
     }
 
-    html.push_str("    <section>\n");
+    html.push_str("    <section id=\"experience\" class=\"section section-experience\">\n");
     html.push_str("      <h2>Experience</h2>\n");
 
     for exp in &doc.experience {
-        html.push_str("      <div class=\"entry\">\n");
+        html.push_str("      <div class=\"experience-item\">\n");
 
         for field in &section.fields {
             render_experience_field(html, exp, field);
@@ -289,14 +289,14 @@ fn render_experience_field(
             match name.as_str() {
                 "title" => {
                     html.push_str(&format!(
-                        "        <h3>{}</h3>\n",
+                        "        <h3 class=\"experience-title\">{}</h3>\n",
                         escape_html(&exp.title)
                     ));
                     return;
                 }
                 "company" => {
                     html.push_str(&format!(
-                        "        <p class=\"company\">{}</p>\n",
+                        "        <p class=\"experience-company\">{}</p>\n",
                         escape_html(&exp.company)
                     ));
                     return;
@@ -304,7 +304,7 @@ fn render_experience_field(
                 "summary" => {
                     if let Some(summary) = &exp.summary {
                         html.push_str(&format!(
-                            "        <p>{}</p>\n",
+                            "        <p class=\"experience-summary\">{}</p>\n",
                             escape_html(summary)
                         ));
                     }
@@ -312,7 +312,7 @@ fn render_experience_field(
                 }
                 "highlights" => {
                     if !exp.highlights.is_empty() {
-                        html.push_str("        <ul>\n");
+                        html.push_str("        <ul class=\"experience-highlights\">\n");
                         for highlight in &exp.highlights {
                             html.push_str(&format!(
                                 "          <li>{}</li>\n",
@@ -370,11 +370,11 @@ fn render_projects_section(
         return;
     }
 
-    html.push_str("    <section>\n");
+    html.push_str("    <section id=\"projects\" class=\"section section-projects\">\n");
     html.push_str("      <h2>Projects</h2>\n");
 
     for proj in &doc.projects {
-        html.push_str("      <div class=\"entry\">\n");
+        html.push_str("      <div class=\"projects-item\">\n");
 
         for field in &section.fields {
             render_project_field(html, proj, field);
@@ -400,7 +400,7 @@ fn render_project_field(
             match name.as_str() {
                 "name" => {
                     html.push_str(&format!(
-                        "        <h3>{}</h3>\n",
+                        "        <h3 class=\"projects-name\">{}</h3>\n",
                         escape_html(&proj.name)
                     ));
                     return;
@@ -408,7 +408,7 @@ fn render_project_field(
                 "url" => {
                     if let Some(url) = &proj.url {
                         html.push_str(&format!(
-                            "        <p><a href=\"{}\">{}</a></p>\n",
+                            "        <p class=\"projects-url\"><a href=\"{}\">{}</a></p>\n",
                             escape_html(url),
                             escape_html(url)
                         ));
@@ -418,7 +418,7 @@ fn render_project_field(
                 "summary" => {
                     if let Some(summary) = &proj.summary {
                         html.push_str(&format!(
-                            "        <p>{}</p>\n",
+                            "        <p class=\"projects-summary\">{}</p>\n",
                             escape_html(summary)
                         ));
                     }
@@ -467,11 +467,11 @@ fn render_education_section(
         return;
     }
 
-    html.push_str("    <section>\n");
+    html.push_str("    <section id=\"education\" class=\"section section-education\">\n");
     html.push_str("      <h2>Education</h2>\n");
 
     for edu in &doc.education {
-        html.push_str("      <div class=\"entry\">\n");
+        html.push_str("      <div class=\"education-item\">\n");
 
         for field in &section.fields {
             render_education_field(html, edu, field);
@@ -497,21 +497,21 @@ fn render_education_field(
             match name.as_str() {
                 "degree" => {
                     html.push_str(&format!(
-                        "        <h3>{}</h3>\n",
+                        "        <h3 class=\"education-degree\">{}</h3>\n",
                         escape_html(&edu.degree)
                     ));
                     return;
                 }
                 "institution" => {
                     html.push_str(&format!(
-                        "        <p class=\"company\">{}</p>\n",
+                        "        <p class=\"education-institution\">{}</p>\n",
                         escape_html(&edu.institution)
                     ));
                     return;
                 }
                 "details" => {
                     if !edu.details.is_empty() {
-                        html.push_str("        <ul>\n");
+                        html.push_str("        <ul class=\"education-details\">\n");
                         for detail in &edu.details {
                             html.push_str(&format!(
                                 "          <li>{}</li>\n",

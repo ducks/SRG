@@ -136,7 +136,7 @@ experience
   let html =
     srg::build::generate_test_html(&doc, "minimal", &layout).unwrap();
 
-  assert!(html.contains("<ul>"));
+  assert!(html.contains("<ul"));
   assert!(html.contains("Built stuff"));
   assert!(html.contains("</ul>"));
 }
