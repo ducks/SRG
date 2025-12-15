@@ -154,8 +154,19 @@ fn render_person_section(
 ) {
     html.push_str("    <header id=\"person\" class=\"section section-person\">\n");
 
-    for field in &section.fields {
-        render_person_field(html, doc, field);
+    for field_or_container in &section.fields {
+        match field_or_container {
+            crate::layout::FieldOrContainer::Field(field) => {
+                render_person_field(html, doc, field);
+            }
+            crate::layout::FieldOrContainer::Container(container) => {
+                html.push_str(&format!("      <div class=\"{}\">\n", container.class_name));
+                for field in &container.fields {
+                    render_person_field(html, doc, field);
+                }
+                html.push_str("      </div>\n");
+            }
+        }
     }
 
     html.push_str("    </header>\n");
@@ -222,13 +233,48 @@ fn render_person_field(
                     }
                     return;
                 }
+                "github" => {
+                    if let Some(github) = &doc.person.github {
+                        html.push_str(&format!(
+                            "      <a class=\"person-github\" href=\"{}\">{}</a>\n",
+                            escape_html(github),
+                            escape_html(github)
+                        ));
+                    }
+                    return;
+                }
+                "linkedin" => {
+                    if let Some(linkedin) = &doc.person.linkedin {
+                        html.push_str(&format!(
+                            "      <a class=\"person-linkedin\" href=\"{}\">{}</a>\n",
+                            escape_html(linkedin),
+                            escape_html(linkedin)
+                        ));
+                    }
+                    return;
+                }
+                "summary" => {
+                    if let Some(summary) = &doc.person.summary {
+                        html.push_str(&format!(
+                            "      <p class=\"person-summary\">{}</p>\n",
+                            escape_html(summary)
+                        ));
+                    }
+                    return;
+                }
                 _ => {}
             }
         }
     }
 
     // Otherwise, render as inline mixed content
-    html.push_str("      <p>");
+    let class_str = if let Some(class_name) = &field.class_name {
+        format!(" class=\"{}\"", class_name)
+    } else {
+        String::new()
+    };
+
+    html.push_str(&format!("      <p{}>\n", class_str));
     for part in &field.parts {
         match part {
             FieldPart::Literal(text) => {
@@ -253,6 +299,9 @@ fn get_person_field_value(doc: &JoblDocument, field: &str) -> Option<String> {
         "phone" => doc.person.phone.clone(),
         "location" => doc.person.location.clone(),
         "website" => doc.person.website.clone(),
+        "github" => doc.person.github.clone(),
+        "linkedin" => doc.person.linkedin.clone(),
+        "summary" => doc.person.summary.clone(),
         _ => None,
     }
 }
@@ -304,8 +353,19 @@ fn render_experience_section(
     for exp in &doc.experience {
         html.push_str("      <div class=\"experience-item\">\n");
 
-        for field in &section.fields {
-            render_experience_field(html, exp, field);
+        for field_or_container in &section.fields {
+            match field_or_container {
+                crate::layout::FieldOrContainer::Field(field) => {
+                    render_experience_field(html, exp, field);
+                }
+                crate::layout::FieldOrContainer::Container(container) => {
+                    html.push_str(&format!("        <div class=\"{}\">\n", container.class_name));
+                    for field in &container.fields {
+                        render_experience_field(html, exp, field);
+                    }
+                    html.push_str("        </div>\n");
+                }
+            }
         }
 
         html.push_str("      </div>\n");
@@ -369,7 +429,13 @@ fn render_experience_field(
     }
 
     // Render as inline mixed content
-    html.push_str("        <p>");
+    let class_str = if let Some(class_name) = &field.class_name {
+        format!(" class=\"{}\"", class_name)
+    } else {
+        String::new()
+    };
+
+    html.push_str(&format!("        <p{}>\n", class_str));
     for part in &field.parts {
         match part {
             FieldPart::Literal(text) => {
@@ -416,8 +482,19 @@ fn render_projects_section(
     for proj in &doc.projects {
         html.push_str("      <div class=\"projects-item\">\n");
 
-        for field in &section.fields {
-            render_project_field(html, proj, field);
+        for field_or_container in &section.fields {
+            match field_or_container {
+                crate::layout::FieldOrContainer::Field(field) => {
+                    render_project_field(html, proj, field);
+                }
+                crate::layout::FieldOrContainer::Container(container) => {
+                    html.push_str(&format!("        <div class=\"{}\">\n", container.class_name));
+                    for field in &container.fields {
+                        render_project_field(html, proj, field);
+                    }
+                    html.push_str("        </div>\n");
+                }
+            }
         }
 
         html.push_str("      </div>\n");
@@ -469,7 +546,13 @@ fn render_project_field(
         }
     }
 
-    html.push_str("        <p>");
+    let class_str = if let Some(class_name) = &field.class_name {
+        format!(" class=\"{}\"", class_name)
+    } else {
+        String::new()
+    };
+
+    html.push_str(&format!("        <p{}>\n", class_str));
     for part in &field.parts {
         match part {
             FieldPart::Literal(text) => {
@@ -513,8 +596,19 @@ fn render_education_section(
     for edu in &doc.education {
         html.push_str("      <div class=\"education-item\">\n");
 
-        for field in &section.fields {
-            render_education_field(html, edu, field);
+        for field_or_container in &section.fields {
+            match field_or_container {
+                crate::layout::FieldOrContainer::Field(field) => {
+                    render_education_field(html, edu, field);
+                }
+                crate::layout::FieldOrContainer::Container(container) => {
+                    html.push_str(&format!("        <div class=\"{}\">\n", container.class_name));
+                    for field in &container.fields {
+                        render_education_field(html, edu, field);
+                    }
+                    html.push_str("        </div>\n");
+                }
+            }
         }
 
         html.push_str("      </div>\n");
@@ -567,7 +661,13 @@ fn render_education_field(
         }
     }
 
-    html.push_str("        <p>");
+    let class_str = if let Some(class_name) = &field.class_name {
+        format!(" class=\"{}\"", class_name)
+    } else {
+        String::new()
+    };
+
+    html.push_str(&format!("        <p{}>\n", class_str));
     for part in &field.parts {
         match part {
             FieldPart::Literal(text) => {

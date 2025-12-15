@@ -126,13 +126,13 @@ body {
 
 main {
   max-width: 75ch;
-  margin: 2rem auto;
+  margin: 0 auto;
   padding: 2rem 1rem;
 }
 
 /* Section styling */
 .section {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 /* Person section (header) */
@@ -145,7 +145,7 @@ main {
   font-family: "Waika", "Berkeley Mono", monospace;
   font-size: clamp(3rem, 5vw, 3rem);
   font-weight: 400;
-  color: var(--accent-comp);
+  color: var(--accent-main);
   margin: 0 0 1rem 0;
   text-transform: uppercase;
 }
@@ -170,7 +170,7 @@ main {
   font-family: "Waika", "Berkeley Mono", monospace;
   font-weight: 400;
   color: var(--accent-comp);
-  margin-top: 2rem;
+  margin-top: 0.5rem;
   margin-bottom: 1rem;
   text-transform: uppercase;
 }
@@ -185,7 +185,7 @@ main {
   font-family: "Waika", "Berkeley Mono", monospace;
   font-weight: 400;
   color: var(--accent-comp);
-  margin-top: 2rem;
+  margin-top: 0.5rem;
   margin-bottom: 1rem;
   text-transform: uppercase;
 }
@@ -235,7 +235,7 @@ main {
   font-family: "Waika", "Berkeley Mono", monospace;
   font-weight: 400;
   color: var(--accent-comp);
-  margin-top: 2rem;
+  margin-top: 0.5rem;
   margin-bottom: 1rem;
   text-transform: uppercase;
 }
@@ -263,7 +263,7 @@ main {
   font-family: "Waika", "Berkeley Mono", monospace;
   font-weight: 400;
   color: var(--accent-comp);
-  margin-top: 2rem;
+  margin-top: 0.5rem;
   margin-bottom: 1rem;
   text-transform: uppercase;
 }
@@ -292,7 +292,7 @@ main {
   font-family: "Waika", "Berkeley Mono", monospace;
   font-weight: 400;
   color: var(--accent-comp);
-  margin-top: 2rem;
+  margin-top: 0.5rem;
   margin-bottom: 1rem;
   text-transform: uppercase;
 }
@@ -361,10 +361,10 @@ code {
   main {
     max-width: 100%;
     margin: 0;
-    padding: 1rem;
+    padding: 2rem;
   }
 
-  .section {
-    page-break-inside: avoid;
+  h2 {
+    page-break-after: avoid;
   }
 }
