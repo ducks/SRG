@@ -11,18 +11,36 @@ use crate::layout::{FieldPart, Layout};
 pub fn build_resume(
     doc: &JoblDocument,
     out_dir: &Path,
-    theme: &str,
+    theme: Option<&str>,
     layout: &Layout,
+    custom_css_path: Option<&Path>,
 ) -> Result<()> {
     // Create output directory
     fs::create_dir_all(out_dir)
         .context("Failed to create output directory")?;
 
-    // Copy theme fonts to output directory
-    copy_theme_fonts(theme, out_dir)?;
+    // Copy theme fonts to output directory if theme is specified
+    if let Some(theme_name) = theme {
+        copy_theme_fonts(theme_name, out_dir)?;
+    }
 
-    // Load CSS from theme
-    let css = load_theme_css(theme)?;
+    // Load CSS - combine theme CSS and custom CSS
+    let mut css = String::new();
+
+    // Load theme CSS if specified
+    if let Some(theme_name) = theme {
+        css.push_str(&load_theme_css(theme_name)?);
+    }
+
+    // Load and append custom CSS if specified
+    if let Some(css_path) = custom_css_path {
+        if !css.is_empty() {
+            css.push_str("\n\n/* Custom CSS */\n");
+        }
+        let custom_css = fs::read_to_string(css_path)
+            .context("Failed to read custom CSS file")?;
+        css.push_str(&custom_css);
+    }
 
     // Generate HTML
     let html = generate_html(doc, &css, layout)?;
@@ -140,10 +158,14 @@ fn generate_html(
 /// Generate HTML for testing (public for integration tests)
 pub fn generate_test_html(
     doc: &JoblDocument,
-    theme: &str,
+    theme: Option<&str>,
     layout: &Layout,
 ) -> Result<String> {
-    let css = load_theme_css(theme)?;
+    let css = if let Some(theme_name) = theme {
+        load_theme_css(theme_name)?
+    } else {
+        String::new()
+    };
     generate_html(doc, &css, layout)
 }
 

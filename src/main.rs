@@ -19,12 +19,16 @@ struct Args {
     out: PathBuf,
 
     /// Theme name (includes both layout and CSS)
-    #[arg(short, long, default_value = "minimal")]
-    theme: String,
+    #[arg(short, long)]
+    theme: Option<String>,
 
     /// Custom layout file (optional, overrides theme layout)
     #[arg(short, long, value_name = "FILE")]
     layout: Option<PathBuf>,
+
+    /// Custom CSS file (optional, loaded after theme CSS or standalone if no theme)
+    #[arg(short, long, value_name = "FILE")]
+    css: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
@@ -40,16 +44,29 @@ fn main() -> Result<()> {
             anyhow::anyhow!("Failed to parse JOBL file")
         })?;
 
+    // Determine theme (default to "minimal" if neither theme nor CSS specified)
+    let theme = args.theme.as_deref().or(if args.css.is_none() {
+        Some("minimal")
+    } else {
+        None
+    });
+
     // Load layout - either from custom file or from theme
     let layout = match &args.layout {
         Some(path) => layout::Layout::from_file(path)
             .context("Failed to load layout file")?,
-        None => layout::Layout::from_theme(&args.theme)
-            .context("Failed to load theme layout")?,
+        None => {
+            if let Some(theme_name) = theme {
+                layout::Layout::from_theme(theme_name)
+                    .context("Failed to load theme layout")?
+            } else {
+                layout::Layout::default()
+            }
+        }
     };
 
     // Build outputs
-    build::build_resume(&doc, &args.out, &args.theme, &layout)
+    build::build_resume(&doc, &args.out, theme, &layout, args.css.as_deref())
         .context("Failed to build resume")?;
 
     println!("Resume built successfully:");
