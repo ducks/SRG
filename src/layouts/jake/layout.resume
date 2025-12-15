@@ -1,0 +1,16 @@
+person
+  name
+  headline
+  email
+
+summary
+
+experience
+  title
+  company
+  start " - " end
+  summary
+  highlights
+
+skills
+

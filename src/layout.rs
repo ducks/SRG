@@ -90,6 +90,15 @@ impl Layout {
     Self::parse(&content)
   }
 
+  pub fn from_theme(theme: &str) -> Result<Self> {
+    let content = match theme {
+      "minimal" => include_str!("layouts/minimal/layout.resume"),
+      "jake" => include_str!("layouts/jake/layout.resume"),
+      _ => anyhow::bail!("Unknown theme: {}", theme),
+    };
+    Self::parse(content)
+  }
+
   pub fn parse(content: &str) -> Result<Self> {
     let mut sections = Vec::new();
     let mut current_section: Option<Section> = None;
@@ -126,7 +135,7 @@ impl Layout {
   }
 
   pub fn default() -> Self {
-    Self::parse(include_str!("templates/default.resume"))
+    Self::parse(include_str!("layouts/minimal/layout.resume"))
       .expect("Default layout should be valid")
   }
 }

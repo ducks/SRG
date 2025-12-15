@@ -18,11 +18,11 @@ struct Args {
     #[arg(short, long, value_name = "DIR", default_value = "dist")]
     out: PathBuf,
 
-    /// Template name
+    /// Theme name (includes both layout and CSS)
     #[arg(short, long, default_value = "minimal")]
-    template: String,
+    theme: String,
 
-    /// Layout file (optional, uses default if not specified)
+    /// Custom layout file (optional, overrides theme layout)
     #[arg(short, long, value_name = "FILE")]
     layout: Option<PathBuf>,
 }
@@ -40,15 +40,16 @@ fn main() -> Result<()> {
             anyhow::anyhow!("Failed to parse JOBL file")
         })?;
 
-    // Load layout
+    // Load layout - either from custom file or from theme
     let layout = match &args.layout {
         Some(path) => layout::Layout::from_file(path)
             .context("Failed to load layout file")?,
-        None => layout::Layout::default(),
+        None => layout::Layout::from_theme(&args.theme)
+            .context("Failed to load theme layout")?,
     };
 
     // Build outputs
-    build::build_resume(&doc, &args.out, &args.template, &layout)
+    build::build_resume(&doc, &args.out, &args.theme, &layout)
         .context("Failed to build resume")?;
 
     println!("Resume built successfully:");
