@@ -587,7 +587,9 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "jobl"
-version = "20251214.0.2"
+version = "20251215.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fbc44feb3d06c4211b2f751184b44e4329c5804764c194531975904ad985c1ea"
 dependencies = [
  "serde",
  "thiserror 1.0.69",
