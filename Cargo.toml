@@ -1,6 +1,6 @@
 [package]
 name = "srg"
-version = "20251215.0.1"
+version = "20251215.0.2"
 edition = "2021"
 authors = ["Jake Goldsborough <github@pancakes.email>"]
 description = "Static Resume Generator - converts JOBL files to HTML and PDF"
