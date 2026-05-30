@@ -922,6 +922,9 @@ dependencies = [
  "clap",
  "headless_chrome",
  "jobl",
+ "serde",
+ "tempfile",
+ "toml",
 ]
 
 [[package]]
