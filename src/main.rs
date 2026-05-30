@@ -5,6 +5,7 @@ use std::path::PathBuf;
 pub mod build;
 pub mod config;
 pub mod layout;
+pub mod themes;
 
 /// Static Resume Generator - Build HTML and PDF resumes from JOBL files
 #[derive(Parser, Debug)]
