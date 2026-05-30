@@ -56,48 +56,32 @@ pub fn build_resume(
     Ok(())
 }
 
-/// Copy theme fonts to output directory
+/// Copy a theme's bundled font assets (if any) to the output dir.
+/// Themes declare fonts simply by placing files under
+/// `src/layouts/<theme>/fonts/`; the build script bundles them and
+/// `crate::themes::fonts_for` exposes them as (relative_path, bytes)
+/// tuples.
 fn copy_theme_fonts(theme: &str, out_dir: &Path) -> Result<()> {
-    if theme == "jake" {
-        // Create fonts directory structure
-        let fonts_dir = out_dir.join("fonts");
-        fs::create_dir_all(fonts_dir.join("waika"))?;
-        fs::create_dir_all(fonts_dir.join("berkeley-mono"))?;
-
-        // Copy Waika font
-        fs::write(
-            fonts_dir.join("waika/waika-webfont.woff2"),
-            include_bytes!("layouts/jake/fonts/waika/waika-webfont.woff2")
-        )?;
-
-        // Copy Berkeley Mono fonts
-        fs::write(
-            fonts_dir.join("berkeley-mono/BerkeleyMono-Regular.woff2"),
-            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-Regular.woff2")
-        )?;
-        fs::write(
-            fonts_dir.join("berkeley-mono/BerkeleyMono-Bold.woff2"),
-            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-Bold.woff2")
-        )?;
-        fs::write(
-            fonts_dir.join("berkeley-mono/BerkeleyMono-Italic.woff2"),
-            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-Italic.woff2")
-        )?;
-        fs::write(
-            fonts_dir.join("berkeley-mono/BerkeleyMono-BoldItalic.woff2"),
-            include_bytes!("layouts/jake/fonts/berkeley-mono/BerkeleyMono-BoldItalic.woff2")
-        )?;
+    let fonts = crate::themes::fonts_for(theme);
+    if fonts.is_empty() {
+        return Ok(());
+    }
+    let fonts_root = out_dir.join("fonts");
+    for (rel, bytes) in fonts {
+        let dest = fonts_root.join(rel);
+        if let Some(parent) = dest.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(&dest, bytes)?;
     }
     Ok(())
 }
 
-/// Load CSS from theme directory
+/// Load CSS from the auto-generated theme registry.
 fn load_theme_css(theme: &str) -> Result<String> {
-    match theme {
-        "minimal" => Ok(include_str!("layouts/minimal/style.css").to_string()),
-        "jake" => Ok(include_str!("layouts/jake/style.css").to_string()),
-        _ => anyhow::bail!("Unknown theme: {}", theme),
-    }
+    crate::themes::css_for(theme)
+        .map(|s| s.to_string())
+        .ok_or_else(|| anyhow::anyhow!("Unknown theme: {}", theme))
 }
 
 /// Generate HTML from JOBL document
