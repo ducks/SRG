@@ -34,6 +34,29 @@ Specify custom output directory:
 srg --input resume.jobl --out public
 ```
 
+## Configuration
+
+Place an `srg.toml` next to your JOBL file to set defaults without
+passing CLI flags every time. All fields are optional; CLI flags
+always override the config.
+
+```toml
+# srg.toml — sits next to resume.jobl
+theme = "jake"
+out = "public"
+# layout = "custom-layout.resume"
+# css = "extra.css"
+```
+
+Relative paths in `srg.toml` resolve against the directory the
+config lives in, so the file is portable across working directories.
+
+Precedence:
+
+```
+CLI flag  >  srg.toml  >  built-in default
+```
+
 ## Output
 
 SRG generates:
